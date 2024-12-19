@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kosenko_kiyki_21_7/models/student.dart';
+import '../models/student.dart';
+import '../models/department.dart';
 
 class NewStudent extends StatefulWidget {
   final Student? student;
@@ -16,7 +17,7 @@ class _NewStudentState extends State<NewStudent> {
   final _lastNameController = TextEditingController();
   Department? _selectedDepartment;
   Gender? _selectedGender;
-  int? _grade;
+  int _grade = 50;
 
   @override
   void initState() {
@@ -31,18 +32,13 @@ class _NewStudentState extends State<NewStudent> {
   }
 
   void _saveStudent() {
-    final firstName = _firstNameController.text;
-    final lastName = _lastNameController.text;
-
-    if (firstName.isEmpty || lastName.isEmpty || _selectedDepartment == null || _selectedGender == null || _grade == null) {
-      return;
-    }
+    if (_selectedDepartment == null || _selectedGender == null) return;
 
     final newStudent = Student(
-      firstName: firstName,
-      lastName: lastName,
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
       department: _selectedDepartment!,
-      grade: _grade!,
+      grade: _grade,
       gender: _selectedGender!,
     );
 
@@ -55,58 +51,133 @@ class _NewStudentState extends State<NewStudent> {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
-        top: 20,
         left: 20,
         right: 20,
+        top: 16,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _firstNameController,
-            decoration: const InputDecoration(labelText: 'Ім’я'),
-          ),
-          TextField(
-            controller: _lastNameController,
-            decoration: const InputDecoration(labelText: 'Прізвище'),
-          ),
-          DropdownButtonFormField<Department>(
-            value: _selectedDepartment,
-            decoration: const InputDecoration(labelText: 'Відділ'),
-            items: Department.values.map((dept) {
-              return DropdownMenuItem(
-                value: dept,
-                child: Text(dept.toString().split('.').last),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedDepartment = value),
-          ),
-          DropdownButtonFormField<Gender>(
-            value: _selectedGender,
-            decoration: const InputDecoration(labelText: 'Стать'),
-            items: Gender.values.map((gender) {
-              return DropdownMenuItem(
-                value: gender,
-                child: Text(gender.toString().split('.').last),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedGender = value),
-          ),
-          TextField(
-            decoration: const InputDecoration(labelText: 'Оцінка'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              final parsedGrade = int.tryParse(value);
-              if (parsedGrade != null && parsedGrade >= 0) {
-                _grade = parsedGrade;
-              }
-            },
-          ),
-          ElevatedButton(
-            onPressed: _saveStudent,
-            child: const Text('Зберегти'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Student',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _firstNameController,
+              decoration: InputDecoration(
+                labelText: 'First Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _lastNameController,
+              decoration: InputDecoration(
+                labelText: 'Last Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<Department>(
+              value: _selectedDepartment,
+              decoration: InputDecoration(
+                labelText: 'Department',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: Department.values.map((dept) {
+                return DropdownMenuItem(
+                  value: dept,
+                  child: Row(
+                    children: [
+                      Icon(
+                        departmentIcons[dept],
+                        color: Colors.deepPurple,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(dept.toString().split('.').last.toUpperCase()),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedDepartment = value),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<Gender>(
+              value: _selectedGender,
+              decoration: InputDecoration(
+                labelText: 'Gender',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: Gender.values.map((gender) {
+                return DropdownMenuItem(
+                  value: gender,
+                  child: Text(
+                    gender.toString().split('.').last.toUpperCase(),
+                    style: const TextStyle(color: Colors.deepPurple),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedGender = value),
+            ),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Grade:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Slider(
+                  value: _grade.toDouble(),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  activeColor: Colors.deepPurple,
+                  inactiveColor: Colors.deepPurple.shade100,
+                  label: '$_grade',
+                  onChanged: (value) => setState(() => _grade = value.toInt()),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _saveStudent,
+              child: const Text(
+                'Save Student',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Цвет текста кнопки.
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

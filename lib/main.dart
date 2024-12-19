@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:kosenko_kiyki_21_7/models/student.dart';
-import 'package:kosenko_kiyki_21_7/widgets/students.dart';
-
-final List<Student> studentsList = [
-  Student(
-      firstName: 'Олександр',
-      lastName: 'Шевченко',
-      department: Department.finance,
-      grade: 5,
-      gender: Gender.male,
-    ),
-    Student(
-      firstName: 'Катерина',
-      lastName: 'Іванова',
-      department: Department.it,
-      grade: 4,
-      gender: Gender.female,
-    ),
-    Student(
-      firstName: 'Сергій',
-      lastName: 'Петренко',
-      department: Department.law,
-      grade: 3,
-      gender: Gender.male,
-    ),
-];
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'widgets/tabs_screen.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: Students(students: studentsList),
-  ));
+  runApp(const ProviderScope(child: MyApp()));
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'University App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        textTheme: GoogleFonts.latoTextTheme(
+          const TextTheme(
+            titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            bodyMedium: TextStyle(fontSize: 14),
+          ),
+        ),
+        scaffoldBackgroundColor: Colors.grey[100],
+      ),
+      home: const TabsScreen(),
+    );
+  }
 }
