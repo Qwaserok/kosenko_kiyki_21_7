@@ -18,16 +18,7 @@ class StudentsScreen extends ConsumerWidget {
       builder: (_) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: NewStudent(
-            student: student,
-            onSave: (newStudent) {
-              if (index != null) {
-                ref.read(studentsProvider.notifier).editStudent(index, newStudent);
-              } else {
-                ref.read(studentsProvider.notifier).addStudent(newStudent);
-              }
-            },
-          ),
+          child: NewStudent(studentIndex: index),
         );
       },
     );
@@ -35,7 +26,27 @@ class StudentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final students = ref.watch(studentsProvider);
+    final state = ref.watch(studentProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (state.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              state.errorMessage!,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
+    if (state.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } 
 
     return Scaffold(
       appBar: AppBar(
@@ -55,10 +66,10 @@ class StudentsScreen extends ConsumerWidget {
           ),
         ),
         child: ListView.builder(
-          itemCount: students.length,
+          itemCount: state.students.length,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           itemBuilder: (context, index) {
-            final student = students[index];
+            final student = state.students[index];
             return Dismissible(
               key: ValueKey(student),
               direction: DismissDirection.endToStart,
@@ -72,7 +83,7 @@ class StudentsScreen extends ConsumerWidget {
                 child: const Icon(Icons.delete, color: Colors.white),
               ),
               onDismissed: (_) {
-                ref.read(studentsProvider.notifier).deleteStudent(index);
+                ref.read(studentProvider.notifier).deleteStudent(index);
                 final container = ProviderScope.containerOf(context);
                 ScaffoldMessenger.of(ref.context).showSnackBar(
                   SnackBar(
@@ -80,10 +91,14 @@ class StudentsScreen extends ConsumerWidget {
                     action: SnackBarAction(
                       label: 'Undo',
                       textColor: Colors.white,
-                      onPressed: () => container.read(studentsProvider.notifier).undoDelete(),
+                      onPressed: () => container.read(studentProvider.notifier).undoDelete(),
                     ),
                   ),
-                );
+                ).closed.then((value) {
+                  if (value != SnackBarClosedReason.action) {
+                    ref.read(studentProvider.notifier).removeFirebase();
+                  }
+                });
               },
               child: InkWell(
                 onTap: () => _showAddOrEditModal(context, ref, student: student, index: index),

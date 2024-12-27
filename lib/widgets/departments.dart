@@ -9,11 +9,11 @@ class DepartmentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final students = ref.watch(studentsProvider);
+    final state = ref.watch(studentProvider);
 
     final Map<Department, int> departmentStudentCounts = {
       for (var department in Department.values)
-        department: students
+        department: state.students
             .where((student) => student.department == department)
             .length,
     };
